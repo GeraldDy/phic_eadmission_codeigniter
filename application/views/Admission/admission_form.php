@@ -5,11 +5,16 @@
     <link href="<?php echo base_url('assets/css/all.min.css') ?> " rel="stylesheet">
     <link href="<?php echo base_url('assets/css/bootstrap-icons.css') ?> " rel="stylesheet">
 	<script src="<?= base_url('assets/js/bootstrap.bundle.min.js') ?>"></script>
+    <script src="<?= base_url('assets/js/jquery.min.js') ?>"></script>
+    
 	<title> <?= $title;?> </title>
 </head>
 <body>
-
-    <div class="container">
+    
+    <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" 
+    value="<?= $this->security->get_csrf_hash(); ?>">
+    <script src="<?= base_url('application/components/admission_form.js') ?>"></script>
+    <div class="container" style="padding-bottom: 20px;">
         <div class="card">
             <nav class="navbar navbar-expand-lg navbar-light sticky-top" style="background-color: #6BAA75">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -167,14 +172,26 @@
             </div>
             <div class="card-body">
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="form-group">
                                 <label>PhilHealth Identification Number<span style="color: red;font-weight: bold;margin-left: 5px;">*</span></label>
                                 <input class="form-control" type="text" id="philhealthID" data-error="#philhealt-id">
                                 <span id="philhealt-id" class="text-red-500 text-sm" style="display: none;color: red;"></span>
                             </div>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-6">
+                            <label>PhilHealth Membership Type<span style="color: red;font-weight: bold;margin-left: 5px;">*</span></label>
+                            <select class="form-select" id="membershipType" data-error="#membershipType-select">
+                                <option selected value="">-- SELECT --</option>
+                                <option value="D">Dependent</option>
+                                <option value="M">Member</option>
+                            </select>
+                            <span id="membershipType-select" class="text-red-500 text-sm" style="display: none;color: red;"></span>
+                        </div>
+                        
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label>Member Firstname<span style="color: red;font-weight: bold;margin-left: 5px;">*</span></label>
                                 <input class="form-control" type="text" id="memberFirstname" data-error="#member-firstname">
@@ -183,7 +200,7 @@
                         </div>
                         
 
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label>Member Middlename<span style="color: red;font-weight: bold;margin-left: 5px;">*</span></label>
                                 <input class="form-control" type="text" id="memberMiddlename" data-error="#member-middlename">
@@ -191,7 +208,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label>Member Lastname<span style="color: red;font-weight: bold;margin-left: 5px;">*</span></label>
                                 <input class="form-control" type="text" id="memberLastname" data-error="#member-lastname">
@@ -199,7 +216,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label>Member Suffix</label>
                                 <input class="form-control" type="text" id="memberSuffix">
@@ -298,5 +315,33 @@
                 </div>
         </div>
     </div>
+    <div class="modal" tabindex="-1" role="dialog" id="confirmSaveModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="modal-title text-xl">Confirm Save</span>
+                </div>
+                <div class="modal-body">
+                        <span> Are you sure you want to save?</span>
+                </div>
+                <div id="loadingIndicator" style="display:none; text-align: center; margin-top: 10px;">
+                    Loading...
+                </div>
+
+                <div id="responseMessage" style="display:none; text-align: center; margin-top: 10px; color: green;">
+                    <!-- This will be populated by JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button  class="btn btn-primary btn-modal-create-confirm"  id="btn-modal-create-confirm">Confirm</button>
+                    <button  class="btn btn-secondary" data-dismiss="modal" id="btn-modal-close">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="footer mt-auto py-3 bg-light">
+        <div class="container">
+            <span class="text-muted">eAdmission Logbook v1.0.2025.1</span>
+        </div>
+    </footer>
 </body>
 </html>
