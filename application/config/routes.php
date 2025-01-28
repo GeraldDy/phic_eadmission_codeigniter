@@ -7,4 +7,8 @@ $route['translate_uri_dashes'] = FALSE;
 
 
 // Custom route for AJAX submission
-$route['submit-dependent-admission'] = 'AdmissionController/save';
+$route['submit-admission'] = 'AdmissionController/submitAdmission';
+
+
+
+//route_for_api

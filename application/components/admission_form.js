@@ -181,7 +181,7 @@ var bindEvents = function() {
     function validateFields() {
         let isValid = true;
         const fields = document.querySelectorAll("[data-error]");
-        console.log(fields)
+        //console.log(fields)
         fields.forEach(field => {
             const errorElement = document.querySelector(field.dataset.error);
             const isMononymChecked = $pMononym.checked;
@@ -203,7 +203,7 @@ var bindEvents = function() {
                 var memberEmailAddress = $mEmailAddress.value;
                 var memberContactNumber = $mContactNumber.value;
 
-                console.log(field.id);
+                //console.log(field.id);
                 if ((field.id === "memberFirstname" && memberFirstname === "") ||
                     (field.id === "memberMiddlename" && memberMiddlename === "") ||
                     (field.id === "memberLastname" && memberLastname === "") ||
@@ -232,12 +232,12 @@ var bindEvents = function() {
         
         let isValid = true;
         const fields = document.querySelectorAll("[mdata-error]");
-        console.log(fields)
+        //console.log(fields)
         fields.forEach(field => {
             //console.log(field.dataset.error);
             const errorElement = document.querySelector(field.dataset.error);
             // const isMononymChecked =$pMononym.checked;
-            console.log(field.id);
+            //console.log(field.id);
             if (!errorElement) {
                 console.error(`Error element not found for field: ${field.id}`);
                 return; 
@@ -249,7 +249,7 @@ var bindEvents = function() {
             // }
            
             if (!field.value.trim()) {
-                console.log(errorElement)
+                //console.log(errorElement)
                 errorElement.textContent = "This field is required.";
                 errorElement.style.display = "block";
                 field.focus();
@@ -258,7 +258,7 @@ var bindEvents = function() {
                 errorElement.style.display = "none";
             }
         });
-        console.log(isValid);
+        //console.log(isValid);
         return isValid;
     }
 
@@ -289,7 +289,7 @@ var bindEvents = function() {
             suffix_val = $pSuffix.value;
         }
         
-        var data= {
+        var dataForm= {
                 "p_mononym": _is_mononym,  
                 "p_first_name": $pFirstName.value,
                 "p_middle_name": $pMiddleName.value,  
@@ -306,7 +306,7 @@ var bindEvents = function() {
                 "p_region": $pRegion.value,
                 "p_province": $pProvince.value,
                 "p_zip_code": $pZipCode.value,
-                "patient_type": "D", 
+                "patient_type": _select_membership_type, 
                 "patient_pin": $mPhilhealthId.value, 
                 "m_first_name": $mFirstName.value,
                 "m_last_name": $mLastName.value,
@@ -321,26 +321,46 @@ var bindEvents = function() {
                 "admission_date": _select_admission_date,
                 "admission_time": $AdmissionTime.value
         }
-
+        console.log(dataForm);
         $.ajax({
-            url: "submit-dependent-admission",
-            method: 'POST',
-            data: ({
-                data: data,
-                csrfmiddlewaretoken: $csrfToken
-            }),
+            url: "submit-admission",
+            method: "POST",
+            data: {
+                jsonData:dataForm,
+                csrf_test_name: $csrfToken 
+            },
             success: function(response){
                 
                 document.getElementById("loadingIndicator").style.display = "none";
                 var responseMessageDiv = document.getElementById("responseMessage");
-                responseMessageDiv.innerHTML = response.message;
-                responseMessageDiv.style.display = "block";
-                console.log(response);
+                // Check if response contains JSON
+                jsonResponse = JSON.parse(response);
+                console.log(jsonResponse.api_response['detail']);
+
+                if( jsonResponse.http_code == 403 && jsonResponse.api_response['detail'].length > 0){
+
+                    let errorList = "<ul style='color: red; text-align: left;'>";
+                    jsonResponse.api_response['detail'].forEach(function(error) {
+                        errorList += `<li>${error}</li>`;
+                    });
+                    errorList += "</ul>";
+    
+                    responseMessageDiv.innerHTML = errorList;
+                    responseMessageDiv.style.display = "block";
+                    
+
+                }
+                else{
+                    console.log(jsonResponse.api_response.message)
+                    reference_number = jsonResponse.api_response.message;
+                    responseMessageDiv.innerHTML = `Admission successfully saved. Reference Number: ${reference_number}`;
+                    responseMessageDiv.style.display = "block";
+                }
                 window.location.reload();
             },
             error: function(response){
                 document.getElementById("loadingIndicator").style.display = "none";
-                alert("Invalid input!")
+                alert(response)
                 console.error("Error response:", response)
             }
         });
