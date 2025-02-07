@@ -350,7 +350,7 @@ var bindEvents = function() {
                     
 
                 }
-                else{
+                else {
                     console.log(jsonResponse.api_response.message)
                     reference_number = jsonResponse.api_response.message;
                     responseMessageDiv.innerHTML = `Admission successfully saved. Reference Number: ${reference_number}`;

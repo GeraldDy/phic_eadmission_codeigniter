@@ -2,12 +2,32 @@
 class AdmissionController extends CI_Controller {
 	public function index()
 	{
-        $data['title'] = "Admission Form";
-		$this->load->view('Admission/admission_form', $data);
+		$vAccreID = $this->input->cookie('accreid');
+		$vUserName = $this->input->cookie('username');
+		$vAdmissionMod = $this->input->cookie('adm');
+
+		if($vAccreID != null and $vUserName != null and $vAdmissionMod != null){
+			$data['title'] = "Admission Form";
+			$this->load->view('Admission/admission_form', $data);
+		}
+		else{
+			echo json_encode([
+				'status' => 'error',
+                'message' => 'Missing Credentials.',
+				'http_code' => 404]);
+		}
+		
 	}
 	public function submitAdmission()
 	{
-		//Receive the POST data
+		$this->load->helper('config');
+		$api_config = get_config_ini('API_CREDENTIALS');
+
+		$api_key = $api_config['API_KEY'];
+		$api_url = $api_config['API_URL'];
+		log_message('debug','api url'. $api_url);
+		
+		//Receive the POST data from ajax
 		$data = $this->input->post('jsonData');
 		$jsonData = json_encode($data);
 		
@@ -60,9 +80,8 @@ class AdmissionController extends CI_Controller {
 
 		log_message('debug', 'Admission form submitted: ' . json_encode($data_array));
 
-		$apiUrl = '127.0.0.1:8000/submit_admission'; // Replace with the actual API URL
-		$api_key='bb0cad44cc100c6b48af12f14fd09e467a5207e29c5249d48ffed619ad8d7112';
-		$api_url_with_key = $apiUrl . '?api_key=' . $api_key;
+		
+		$api_url_with_key = $api_url . '?api_key=' . $api_key;
 		log_message('debug', 'API URL: ' . $api_url_with_key);
         $ch = curl_init($api_url_with_key);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -87,10 +106,6 @@ class AdmissionController extends CI_Controller {
                 'api_response' => json_decode($response)
             ]);
         }
-
-
-		
-
 	}
 }
 
