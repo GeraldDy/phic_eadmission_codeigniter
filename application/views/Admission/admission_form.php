@@ -33,6 +33,33 @@
             </div>
             <div class="card-body">
                 <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for=""> Case Number <span style="color: red;font-weight: bold;margin-left: 5px;">*</span>  </label>
+                            <input type="text" class="form-control" id="caseNumber" data-error="#case-number">
+                            <span id="case-number" class="text-red-500 text-sm" style="display: none;color: red;"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>PhilHealth Identification Number<span style="color: red;font-weight: bold;margin-left: 5px;">*</span></label>
+                            <input class="form-control" type="text" id="philhealthID" data-error="#philhealt-id">
+                            <span id="philhealt-id" class="text-red-500 text-sm" style="display: none;color: red;"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label>PhilHealth Membership Type<span style="color: red;font-weight: bold;margin-left: 5px;">*</span></label>
+                            <select class="form-select" id="membershipType" data-error="#membershipType-select">
+                                <option selected value="">-- SELECT --</option>
+                                <option value="D">Dependent</option>
+                                <option value="M">Member</option>
+                            </select>
+                            <span id="membershipType-select" class="text-red-500 text-sm" style="display: none;color: red;"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
                     <div class="col-md-3">
                         <div class="form-group">
                             <label> Patient Firstname  <span style="color: red;font-weight: bold;margin-left: 5px;">*</span></label>
@@ -168,28 +195,9 @@
                 </div>
             </div>
             <div class="card-header"> 
-                    PhilHealth Members Information
+                Members Information
             </div>
             <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>PhilHealth Identification Number<span style="color: red;font-weight: bold;margin-left: 5px;">*</span></label>
-                                <input class="form-control" type="text" id="philhealthID" data-error="#philhealt-id">
-                                <span id="philhealt-id" class="text-red-500 text-sm" style="display: none;color: red;"></span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <label>PhilHealth Membership Type<span style="color: red;font-weight: bold;margin-left: 5px;">*</span></label>
-                            <select class="form-select" id="membershipType" data-error="#membershipType-select">
-                                <option selected value="">-- SELECT --</option>
-                                <option value="D">Dependent</option>
-                                <option value="M">Member</option>
-                            </select>
-                            <span id="membershipType-select" class="text-red-500 text-sm" style="display: none;color: red;"></span>
-                        </div>
-                        
-                    </div>
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">

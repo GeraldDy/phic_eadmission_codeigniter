@@ -5,21 +5,25 @@ class AdmissionController extends CI_Controller {
 		$vAccreID = $this->input->cookie('accreid');
 		$vUserName = $this->input->cookie('username');
 		$vAdmissionMod = $this->input->cookie('adm');
-
-		if($vAccreID != null and $vUserName != null and $vAdmissionMod != null){
-			$data['title'] = "Admission Form";
-			$this->load->view('Admission/admission_form', $data);
-		}
-		else{
-			echo json_encode([
-				'status' => 'error',
-                'message' => 'Missing Credentials.',
-				'http_code' => 404]);
-		}
+		$data['title'] = "Admission Form";
+		$this->load->view('Admission/admission_form', $data);
+		// if($vAccreID != null and $vUserName != null and $vAdmissionMod != null){
+		// 	$data['title'] = "Admission Form";
+		// 	$this->load->view('Admission/admission_form', $data);
+		// }
+		// else{
+		// 	echo json_encode([
+		// 		'status' => 'error',
+        //         'message' => 'Missing Credentials.',
+		// 		'http_code' => 404]);
+		// 	$this->load->view('errors/html/error_404');
+		// }
 		
 	}
 	public function submitAdmission()
 	{
+		// $vAccreID = $this->input->cookie('accreid');
+		$vAccreID = 'A03000006';
 		$this->load->helper('config');
 		$api_config = get_config_ini('API_CREDENTIALS');
 
@@ -49,8 +53,8 @@ class AdmissionController extends CI_Controller {
 
 	
 		$data_array = array(
-			"hospital_code"=> "H12345",
-			"case_number"=>  "123123123",
+			"hospital_code"=> $vAccreID,
+			"case_number"=>  $decodeData['case_number'],
 			"p_mononym"=> $mononym,
 			"p_first_name"=> $decodeData['p_first_name'],
 			"p_middle_name"=> $decodeData['p_middle_name'],
@@ -92,6 +96,7 @@ class AdmissionController extends CI_Controller {
 		$response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+		log_message('debug', 'response'. $response);
         if ($httpCode == 200) {
             echo json_encode([
                 'status' => 'success',

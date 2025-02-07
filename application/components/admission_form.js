@@ -3,6 +3,7 @@ var $confirmSaveModal;
 var $btnConfirmSave;
 var $btnCloseConfirmModal
 
+var $caseNumber;
 var $pFirstName;
 var $pMiddleName;
 var $pLastName;
@@ -60,7 +61,7 @@ var cacheDom = function() {
     $btnConfirmSave     = document.querySelector("#btn-modal-create-confirm");
     $btnCloseConfirmModal = document.querySelector("#btn-modal-close");
 
-
+    $caseNumber         = document.querySelector("#caseNumber");
     $pFirstName         = document.querySelector("#firstName");
     $pMiddleName        = document.querySelector("#middleName");
     $pLastName          = document.querySelector("#lastName");
@@ -290,6 +291,7 @@ var bindEvents = function() {
         }
         
         var dataForm= {
+                "case_number": $caseNumber.value,
                 "p_mononym": _is_mononym,  
                 "p_first_name": $pFirstName.value,
                 "p_middle_name": $pMiddleName.value,  
@@ -335,10 +337,8 @@ var bindEvents = function() {
                 var responseMessageDiv = document.getElementById("responseMessage");
                 // Check if response contains JSON
                 jsonResponse = JSON.parse(response);
-                console.log(jsonResponse.api_response['detail']);
-
                 if( jsonResponse.http_code == 403 && jsonResponse.api_response['detail'].length > 0){
-
+                    console.log(jsonResponse.api_response['detail']);
                     let errorList = "<ul style='color: red; text-align: left;'>";
                     jsonResponse.api_response['detail'].forEach(function(error) {
                         errorList += `<li>${error}</li>`;
@@ -355,8 +355,9 @@ var bindEvents = function() {
                     reference_number = jsonResponse.api_response.message;
                     responseMessageDiv.innerHTML = `Admission successfully saved. Reference Number: ${reference_number}`;
                     responseMessageDiv.style.display = "block";
+                    window.location.reload();
                 }
-                window.location.reload();
+                
             },
             error: function(response){
                 document.getElementById("loadingIndicator").style.display = "none";
