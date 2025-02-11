@@ -5,25 +5,27 @@ class AdmissionController extends CI_Controller {
 		$vAccreID = $this->input->cookie('accreid');
 		$vUserName = $this->input->cookie('username');
 		$vAdmissionMod = $this->input->cookie('adm');
+		
 		$data['title'] = "Admission Form";
-		$this->load->view('Admission/admission_form', $data);
-		// if($vAccreID != null and $vUserName != null and $vAdmissionMod != null){
-		// 	$data['title'] = "Admission Form";
-		// 	$this->load->view('Admission/admission_form', $data);
-		// }
-		// else{
-		// 	echo json_encode([
-		// 		'status' => 'error',
-        //         'message' => 'Missing Credentials.',
-		// 		'http_code' => 404]);
-		// 	$this->load->view('errors/html/error_404');
-		// }
+		// $this->load->view('Admission/admission_form', $data);
+		if($vAccreID != null and $vUserName != null and $vAdmissionMod != null){
+			$data['title'] = "Admission Form";
+			$this->load->view('Admission/admission_form', $data);
+		}
+		else{
+			echo json_encode([
+				'status' => 'error',
+                'message' => 'Missing Credentials.',
+				'http_code' => 404]);
+			
+			$this->load->view('errors/html/error_404');
+		}
 		
 	}
 	public function submitAdmission()
 	{
-		// $vAccreID = $this->input->cookie('accreid');
-		$vAccreID = 'A03000006';
+		$vAccreID = $this->input->cookie('accreid');
+		// $vAccreID = 'A03000006';
 		$this->load->helper('config');
 		$api_config = get_config_ini('API_CREDENTIALS');
 
