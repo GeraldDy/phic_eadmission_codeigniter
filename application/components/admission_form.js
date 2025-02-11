@@ -365,13 +365,7 @@ var bindEvents = function() {
                 console.error("Error response:", response)
             }
         });
-
-       
-
-
     });
-
-  
 }
 
 
