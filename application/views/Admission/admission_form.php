@@ -10,7 +10,6 @@
 	<title> <?= $title;?> </title>
 </head>
 <body>
-    
     <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" 
     value="<?= $this->security->get_csrf_hash(); ?>">
     <script src="<?= base_url('application/components/admission_form.js') ?>"></script>
@@ -25,6 +24,28 @@
                     </li>
                 </ul>
             </nav>
+            <div class="card-header">
+                <h4 class="text-center">Upload eClaims XML</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-10">
+                        <div class="form-group">
+                            <label for="xmlFile">Upload XML File</label>
+                            <div class="input-group">
+                                <input type="file" class="form-control" id="xmlFile" accept=".xml">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-primary" id="btn-upload-xml">Upload</button>
+                    </div>
+                </div>
+            </div>
+
+
+
+
             <div class="card-header">
                 <h4 class="text-center">Admission Form</h4>
             </div>

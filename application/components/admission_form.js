@@ -3,6 +3,10 @@ var $confirmSaveModal;
 var $btnConfirmSave;
 var $btnCloseConfirmModal
 
+
+var $btnUploadXml;
+var $xmlFile;
+
 var $caseNumber;
 var $pFirstName;
 var $pMiddleName;
@@ -46,6 +50,8 @@ var _select_admission_date  = "";
 var _select_reason_availment = "";
 var _is_mononym = false;
 
+let _encrypted_data = "";
+
 var init  = function() {
     console.log("test");
     cacheDom();
@@ -60,6 +66,9 @@ var cacheDom = function() {
     $confirmSaveModal   = $("#confirmSaveModal");
     $btnConfirmSave     = document.querySelector("#btn-modal-create-confirm");
     $btnCloseConfirmModal = document.querySelector("#btn-modal-close");
+
+    $btnUploadXml       = document.querySelector("#btn-upload-xml");
+    $xmlFile            = document.querySelector("#xmlFile");
 
     $caseNumber         = document.querySelector("#caseNumber");
     $pFirstName         = document.querySelector("#firstName");
@@ -107,6 +116,50 @@ var bindEvents = function() {
     $mEmailAddress.disabled = true;
     $mContactNumber.disabled = true;
 
+    $btnUploadXml.addEventListener("click", function(event){
+        let data_file = $xmlFile.files[0];
+        console.log("click upload xml");
+        if (data_file) {
+            let reader = new FileReader();
+    
+            reader.onload = function(event) {
+                _encrypted_data = event.target.result;
+                console.log("XML Content:", _encrypted_data);
+                // Process data after it's loaded
+                processData(_encrypted_data);
+                // Optionally, parse XML content
+                // let parser = new DOMParser();
+                // let xmlDoc = parser.parseFromString(_encrypted_data, "text/xml");
+                // console.log("Parsed XML:", xmlDoc);
+                // Example: Get data from a specific XML tag
+                // let someTag = xmlDoc.getElementsByTagName("yourTagName")[0]?.textContent;
+                // console.log("Extracted Data:", someTag);
+            };
+           
+            reader.readAsText(data_file); // Read file as text
+        } else {
+            console.log("No file selected.");
+        }
+    });
+    function processData(data) {
+        console.log("Processing encrypted data:", data);
+        $.ajax({
+            url: "upload-xml",
+            method: "POST",
+            data: {
+                encrypted_data: data,
+                csrf_test_name: $csrfToken
+            },
+            success: function(response){
+                console.log(response);
+                jsonResponse = JSON.parse(response);
+                console.log(jsonResponse.api_response);
+            },
+            error: function(response){
+                console.error("Error response:", response)
+            }
+        });
+    }
 
     $selectMembershipType.addEventListener("change",function(){
         $mFirstName.value = "";

@@ -7,19 +7,19 @@ class AdmissionController extends CI_Controller {
 		$vAdmissionMod = $this->input->cookie('adm');
 		
 		$data['title'] = "Admission Form";
-		// $this->load->view('Admission/admission_form', $data);
-		if($vAccreID != null and $vUserName != null and $vAdmissionMod != null){
-			$data['title'] = "Admission Form";
-			$this->load->view('Admission/admission_form', $data);
-		}
-		else{
-			echo json_encode([
-				'status' => 'error',
-                'message' => 'Missing Credentials.',
-				'http_code' => 404]);
+		$this->load->view('Admission/admission_form', $data);
+		// if($vAccreID != null and $vUserName != null and $vAdmissionMod != null){
+		// 	$data['title'] = "Admission Form";
+		// 	$this->load->view('Admission/admission_form', $data);
+		// }
+		// else{
+		// 	echo json_encode([
+		// 		'status' => 'error',
+        //         'message' => 'Missing Credentials.',
+		// 		'http_code' => 404]);
 			
-			$this->load->view('errors/html/error_404');
-		}
+		// 	$this->load->view('errors/html/error_404');
+		// }
 		
 	}
 	public function submitAdmission()
@@ -52,7 +52,8 @@ class AdmissionController extends CI_Controller {
 		$pBirthdate = new DateTime($decodeData['p_birthday']);
 		$formattedPBirthdate = $pBirthdate->format('m-d-Y');
 		$formattedAdmDate = $AdmDate->format('m-d-Y');
-
+		$pAge = $pBirthdate->diff(new DateTime)->y;
+		// log_message('debug', 'pAge: ' . $pAge);
 	
 		$data_array = array(
 			"hospital_code"=> $vAccreID,
@@ -64,6 +65,7 @@ class AdmissionController extends CI_Controller {
 			"p_suffix"=> $decodeData['p_suffix'],
 			"p_birthday"=> $formattedPBirthdate,  
 			"p_gender"=> $decodeData['p_gender'],    
+			"p_age"=> $pAge,
 			"p_nationality"=> $decodeData['p_nationality'],
 			"p_contact_number"=> $decodeData['p_contact_number'],
 			"p_email_address"=> $decodeData['p_email_address'],
@@ -114,5 +116,78 @@ class AdmissionController extends CI_Controller {
             ]);
         }
 	}
+	public function uploadXML()
+	{
+		$this->load->helper('config');
+		$data = $this->input->post('encrypted_data');
+		$api_config = get_config_ini('API_CREDENTIALS');
+		$api_url = $api_config['API_DECRYPT_URL'];
+
+
+		log_message('debug', 'XML Data: ' . $data);
+		$cipher_key = "DummyCipherKey300806";
+		log_message('debug', 'json_encode data: ' . $data);
+		$api_url_with_key = $api_url . '?Cipherkey=' . $cipher_key;
+		log_message('debug', 'API URL: ' . $api_url_with_key);
+        $ch = curl_init($api_url_with_key);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Timeout after 30 seconds
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+		log_message('debug', "link:" .$ch);
+		$response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+		log_message('debug', 'response: '. $response);
+
+		function flattenAttributes($array) {
+			foreach ($array as $key => &$value) {
+				if ($key == '@attributes') {
+					// Merge the attributes into the parent
+					$value = (array) $value;
+					foreach ($value as $attrKey => $attrValue) {
+						$array[$attrKey] = $attrValue; // Merge the attribute values
+					}
+					unset($array['@attributes']); // Remove the @attributes key
+				} elseif (is_array($value)) {
+					// Recursively call the function for nested elements
+					$array[$key] = flattenAttributes($value);
+				}
+			}
+			return $array;
+		}
+
+
+		$xmlObject = simplexml_load_string($response);
+		$json = json_encode($xmlObject);
+		$jsonArray = json_decode($json, true);
+
+		// Remove the @attributes key from the array
+		$jsonArray = flattenAttributes($jsonArray);
+
+
+		// Log the result
+		log_message('debug', 'jsonArray: ' . print_r($jsonArray, true));
+
+        if ($httpCode == 200) {
+			$xml = simplexml_load_string($response);
+			log_message('debug', 'xml'. $xml);
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Admission form submitted successfully!',
+                'api_response' => $jsonArray
+            ]);
+        } else {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Failed to submit admission form to external API.',
+				'http_code' => $httpCode,
+                'api_response' => json_decode($response)
+            ]);
+        }
+
+	}
+	
 }
 
