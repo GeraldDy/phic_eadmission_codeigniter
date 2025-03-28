@@ -1,6 +1,8 @@
 <?php
 
 $route['default_controller'] = 'AdmissionController/index';
+$route['admission_form'] = 'AdmissionController/admission_form_index';
+$route['upload-xml-index'] = 'AdmissionController/xml_uploading_index';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
@@ -10,5 +12,8 @@ $route['translate_uri_dashes'] = FALSE;
 $route['submit-admission'] = 'AdmissionController/submitAdmission';
 $route['upload-xml'] = 'AdmissionController/uploadXML';
 
+
+
+$route['submit-xml-data'] = 'AdmissionController/submitXMLData';
 
 //route_for_api

@@ -1,0 +1,18 @@
+/* Default link color */
+.navbar-nav .nav-link {
+    color: black !important;  /* Ensures the text is black by default */
+    border-radius: 5px;
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+/* Hover effect */
+.navbar-nav .nav-link:hover {
+    background-color: #5C9A65;
+    color: white !important;
+}
+
+/* Active link styling */
+.navbar-nav .nav-link.active {
+    background-color: #5C9A65 !important;
+    color: white !important;
+}
