@@ -350,7 +350,6 @@
         </div>
     </div>
     <div class="modal"  id="confirmSaveModal" tabindex="-1" role="dialog">
-         id="confirmSaveModal" tabindex="-1" role="dialog"
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -405,8 +404,82 @@
                 this.style.backgroundColor = "transparent";
                 this.style.color = "black";
             }
-        });
+        }); 
     });
+
+
+    let today = new Date();
+    let todayStr = today.toISOString().split("T")[0];
+    let pBirthdate = document.getElementById("birthDate");
+    if (pBirthdate) {
+        pBirthdate.setAttribute("max", todayStr);
+    }
+    pBirthdate.addEventListener("change", function () {
+            if (this.value > todayStr) {
+                this.value = todayStr; 
+            }
+    });
+
+    //disable future date
+    let admissionDate = document.getElementById("admissionDate");
+    if (admissionDate) {
+        admissionDate.setAttribute("max", todayStr);
+    }
+    admissionDate.addEventListener("change", function () {
+            if (this.value > todayStr) {
+                this.value = todayStr; 
+            }
+    });
+
+    document.getElementById("firstName").addEventListener("input", function () {
+        let regex = /^[A-Za-z\s]+$/; 
+        let firstName = this.value;
+
+        if (!regex.test(firstName)) {
+            this.value = firstName.replace(/[^A-Za-z\s]/g, ""); 
+        }
+    });
+    document.getElementById("middleName").addEventListener("input", function () {
+        let regex = /^[A-Za-z\s]+$/; 
+        let middleName = this.value;
+
+        if (!regex.test(middleName)) {
+            this.value = middleName.replace(/[^A-Za-z\s]/g, "");
+        }
+    });
+    document.getElementById("lastName").addEventListener("input", function () {
+        let regex = /^[A-Za-z\s]+$/; 
+        let lastName = this.value;
+
+        if (!regex.test(lastName)) {
+            this.value = lastName.replace(/[^A-Za-z\s]/g, ""); 
+        }
+    });
+    document.getElementById("memberFirstname").addEventListener("input", function () {
+        let regex = /^[A-Za-z\s]+$/; 
+        let memberFirstname = this.value;
+
+        if (!regex.test(memberFirstname)) {
+            this.value = memberFirstname.replace(/[^A-Za-z\s]/g, ""); 
+        }
+    });
+    document.getElementById("memberMiddlename").addEventListener("input", function () {
+        let regex = /^[A-Za-z\s]+$/; 
+        let memberMiddlename = this.value;
+
+        if (!regex.test(memberMiddlename)) {
+            this.value = memberMiddlename.replace(/[^A-Za-z\s]/g, ""); 
+        }
+    });
+    document.getElementById("memberLastname").addEventListener("input", function () {
+        let regex = /^[A-Za-z\s]+$/;
+        let memberLastname = this.value;
+
+        if (!regex.test(memberLastname)) {
+            this.value = memberLastname.replace(/[^A-Za-z\s]/g, "");
+        }
+    });
+
 });
 </script>
 </body>

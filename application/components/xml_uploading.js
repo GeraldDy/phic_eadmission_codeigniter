@@ -304,7 +304,7 @@ var bindEvents = function() {
         $btnUploadXml.disabled = false;
     });
     $btnSubmitXmlData.addEventListener("click", function(event){
-        console.log("xml: ", xml_data);
+        $btnSubmitXmlData.disabled = true;
         $.ajax({
             url:"submit-xml-data",
             method: "POST",
@@ -313,10 +313,10 @@ var bindEvents = function() {
                 data_dict: xml_data
             },
             success: function(response){
-               
+                console.log("Raw Response:", response);
                 var responseMessageDiv = document.getElementById("responseMessage");
                 // Check if response contains JSON
-                jsonResponse = JSON.parse(response);
+                jsonResponse = response;
                 if( jsonResponse.http_code == 403 && jsonResponse.api_response['detail'].length > 0){
 
                     console.log(jsonResponse.api_response);
@@ -328,14 +328,9 @@ var bindEvents = function() {
     
                     responseMessageDiv.innerHTML = errorList;
                     responseMessageDiv.style.display = "block";
-                    
-
                 }
                 else {
-                    console.log(jsonResponse.api_response.message)
-                    reference_number = jsonResponse.api_response.message;
-                    responseMessageDiv.innerHTML = `Admission successfully saved. Reference Number: ${reference_number}`;
-                    responseMessageDiv.style.display = "block";
+                    alert(`Admission successfully saved`);
                     window.location.reload();
                 }
             },

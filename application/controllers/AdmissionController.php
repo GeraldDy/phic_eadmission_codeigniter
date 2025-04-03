@@ -3,98 +3,101 @@ class AdmissionController extends CI_Controller {
 
 	public $hospital_code; 
 	public $cipher_key;
+
+
 	public function __construct() {
         parent::__construct();
         $vAccreID = $this->input->cookie('accreid') ?? 'A91000007'; 
+		$adm = $this->input->cookie('amd');
         $this->hospital_code = $this->get_hospital_code($vAccreID);
 		$this->cipher_key = $this->get_cipher_key($this->hospital_code);
-		log_message('debug', 'cipher_key-'. $this->cipher_key);
     }
 
 	public function get_hospital_code($vAccreID){
+
 		$this->load->helper('config');
 		$api_config = get_config_ini('API_CREDENTIALS');
 		$api_key = $api_config['API_KEY'];
 		$app_key = $api_config['APP_KEY'];
 		$api_url = $api_config['API_GET_HOSPITAL_CODE_URL'];
 		$api_url_with_key = $api_url . $vAccreID . '?api_key=' . $api_key . '&app_key='. $app_key ;
-		log_message('debug', 'API URL: ' . $api_url_with_key);
 		$ch = curl_init($api_url_with_key);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_HTTPGET, true);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-
 		$response = curl_exec($ch);
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
-		log_message('debug', 'response'. $response);
-
+		
 		if ($httpCode == 200) {
 			return $response;
 		} else {
+			log_message('debug', 'hospital_code_error: '. $response);
 			return null;
 		}
 	}
 
 	public function get_cipher_key($hospital_code){
-		$this->load->helper('config');
-		$api_config = get_config_ini('API_CREDENTIALS');
-		$api_key = $api_config['API_KEY'];
-		$app_key = $api_config['APP_KEY'];
-		$api_url = $api_config['API_GET_CIPHER_KEY_URL'];
-		$api_url_with_key = $api_url . '?api_key=' . $api_key . '&app_key='. $app_key . '&hospital_code=' . $hospital_code ;
-		log_message('debug', 'API URL: ' . $api_url_with_key);
-		$ch = curl_init($api_url_with_key);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_POST, true);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
 
-		$response = curl_exec($ch);
-		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-		curl_close($ch);
-		log_message('debug', 'response'. $response);
+		if($hospital_code != null){
+			$this->load->helper('config');
+			$api_config = get_config_ini('API_CREDENTIALS');
+			$api_key = $api_config['API_KEY'];
+			$app_key = $api_config['APP_KEY'];
+			$api_url = $api_config['API_GET_CIPHER_KEY_URL'];
+			$api_url_with_key = $api_url . '?api_key=' . $api_key . '&app_key='. $app_key . '&hospital_code=' . $hospital_code ;
+			log_message('debug', 'API URL: ' . $api_url_with_key);
+			$ch = curl_init($api_url_with_key);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_POST, true);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
 
-		if ($httpCode == 200) {
-			return $response;
-		} else {
-			return null;
+			$response = curl_exec($ch);
+			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+			curl_close($ch);
+			log_message('debug', 'response'. $response);
+
+			if ($httpCode == 200) {
+				return $response;
+			} else {
+				return null;
+			}
 		}
+		
 	}
 	public function index()
 	{
 		//$vAccreID = $this->input->cookie('accreid');
-		$vAccreID = 'A91000007';
-		$vUserName = $this->input->cookie('username');
-		$vAdmissionMod = $this->input->cookie('adm');
-		
 	
-		log_message('debug', 'hospital_code:'. $this->hospital_code);
+		if ($this->hospital_code == null) {
+			$this->load->view('error_template/internal_server');
+		}
+		else{
+			$this->load->helper('config');
+			$api_config = get_config_ini('API_CREDENTIALS');
+			$api_key = $api_config['API_KEY'];
+			$app_key = $api_config['APP_KEY'];
+			$api_url = $api_config['API_GET_LOGBOOK_DATA_URL'];			
+			$api_url_with_key = $api_url .$this->hospital_code.'?api_key=' . $api_key . '&app_key='. $app_key;
 
-		$this->load->helper('config');
-		$api_config = get_config_ini('API_CREDENTIALS');
-		$api_key = $api_config['API_KEY'];
-		$app_key = $api_config['APP_KEY'];
-		$api_url = $api_config['API_GET_LOGBOOK_DATA_URL'];
-		
-		$api_url_with_key = $api_url .$this->hospital_code.'?api_key=' . $api_key . '&app_key='. $app_key;
-		log_message('debug', 'API URL: ' . $api_url_with_key);
-		$ch = curl_init($api_url_with_key);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_HTTPGET, true);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+			$ch = curl_init($api_url_with_key);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_HTTPGET, true);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
 
-		$response = curl_exec($ch);
-		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-		curl_close($ch);
-		log_message('debug', 'response'. $response);
+			$response = curl_exec($ch);
+			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+			curl_close($ch);
+			log_message('debug', 'response'. $response);
 
-		if ($httpCode == 200) {
-			$data['title'] = "Dashboard";
-			$data['admission_data'] = json_decode($response,true);
-			$this->load->view('Admission/dashboard', $data);
-		} else {
-			return null;
-		}		
+			if ($httpCode == 200) {
+				$data['title'] = "Dashboard";
+				$data['admission_data'] = json_decode($response,true);
+				$this->load->view('Admission/dashboard', $data);
+			} else {
+				$this->load->view('error_template/internal_server');
+			}	
+		}
 	}
 	
 	
@@ -114,8 +117,7 @@ class AdmissionController extends CI_Controller {
 		$api_key = $api_config['API_KEY'];
 		$api_url = $api_config['API_URL'];
 		$app_key = $api_config['APP_KEY'];
-		#$vAccreID = $this->input->cookie('accreid') ;
-		$vAccreID ='A91000007';
+		
 		
 		//Receive the POST data from ajax
 		$data = $this->input->post('jsonData');
@@ -137,9 +139,7 @@ class AdmissionController extends CI_Controller {
 		$formattedPBirthdate = $pBirthdate->format('m-d-Y');
 		$formattedAdmDate = $AdmDate->format('m-d-Y');
 		$pAge = $pBirthdate->diff(new DateTime)->y;
-		
-		log_message('debug', 'subnmit: ' . $this->hospital_code);
-	
+
 		$data_array = array(
 			"hospital_code"=> $this->hospital_code,
 			"case_number"=>  $decodeData['case_number'],
@@ -173,8 +173,6 @@ class AdmissionController extends CI_Controller {
 		);
 
 		log_message('debug', 'Admission form submitted: ' . json_encode($data_array));
-
-		
 		$api_url_with_key = $api_url . '?api_key=' . $api_key. '&app_key='. $app_key ;
 		log_message('debug', 'API URL: ' . $api_url_with_key);
         $ch = curl_init($api_url_with_key);
@@ -186,7 +184,7 @@ class AdmissionController extends CI_Controller {
 		$response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-		log_message('debug', 'response'. $response);
+		log_message('debug', 'response_submit: '. $response . "http_stats: ".$httpCode);
         if ($httpCode == 200) {
             echo json_encode([
                 'status' => 'success',
@@ -204,83 +202,104 @@ class AdmissionController extends CI_Controller {
 	}
 
 	public function xml_uploading_index(){
-		$vAccreID = $this->input->cookie('accreid');
-		$vUserName = $this->input->cookie('username');
-		$vAdmissionMod = $this->input->cookie('adm');
-		$this->load->view('Admission/xml_uploading');
+		if($this->cipher_key == null){
+			$this->load->view('error_template/internal_server');
+		}
+		else{
+			$this->load->view('Admission/xml_uploading');
+		}
 	}
+
 	public function uploadXML()
 	{
-		$this->load->helper('config');
-		$data = $this->input->post('encrypted_data');
-		
-		$api_config = get_config_ini('API_CREDENTIALS');
-		$api_url = $api_config['API_DECRYPT_URL'];
-
-		$cipher_key = "PHilheaLthDuMmyciPHerKeyS"; 
-		//$cipher_key = "DummyCipherKey300806"; A91000088 H12345
-		log_message('debug', 'json_encode data: ' . $data);
-		$api_url_with_key = $api_url . '?Cipherkey=' . $cipher_key;
-		log_message('debug', 'API URL: ' . $api_url_with_key);
-        $ch = curl_init($api_url_with_key);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Timeout after 30 seconds
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-		$response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-		log_message('debug', 'response: '. $httpCode);
-
-		
-        if ($httpCode == 200) {
-			$xmlObject = simplexml_load_string($response);
-			function xmlToArray($xml) {
-				$json = json_encode($xml);
-				$array = json_decode($json, true);
-
-				return removeAttributes($array);
-			}
-			function removeAttributes($data) {
-				if (!is_array($data)) {
-					return $data;
-				}
-				// If @attributes exist, merge them with the current array
-				if (isset($data["@attributes"])) {
-					$data = array_merge($data["@attributes"], $data);
-					unset($data["@attributes"]);
-				}
-				// Recursively process child elements
-				foreach ($data as $key => &$value) {
-					$value = removeAttributes($value);
-				}
-				return $data;
-			}
-			$jsonArray = xmlToArray($xmlObject);
-			$json = json_encode($jsonArray, JSON_PRETTY_PRINT);
-            echo json_encode([
-                'status' => 'success',
-                'message' => 'Admission form submitted successfully!',
-                'api_response' => json_decode($json, true),
-				'http_code' => $httpCode
-            ]);
-        }
-		else if ($httpCode == 0){
-			echo json_encode([
-                'status' => 'error',
-                'message' => 'Error connecting to external API.',
-				'http_code' => $httpCode
-            ]);
+		if($this->cipher_key == null){
+			$this->load->view('error_template/internal_server');
 		}
-		else {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Failed to submit admission form to external API.',
-				'http_code' => $httpCode,
-                'api_response' => $response
-            ]);
-        }
+		else{
+			$this->load->helper('config');
+			$data = $this->input->post('encrypted_data');
+			
+			$api_config = get_config_ini('API_CREDENTIALS');
+			$api_url = $api_config['API_DECRYPT_URL'];
+
+			log_message('debug', 'this is cipher key: ' . $this->cipher_key);
+			$api_url_with_key = $api_url . '?Cipherkey=' . $this->cipher_key;
+			log_message('debug', 'API URL: ' . $api_url_with_key);
+			$ch = curl_init($api_url_with_key);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Timeout after 30 seconds
+			curl_setopt($ch, CURLOPT_POST, true);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+			$response = curl_exec($ch);
+			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+			curl_close($ch);
+			log_message('debug', 'response: '. $response);
+
+			if ($httpCode == 200) {
+				libxml_use_internal_errors(true);
+				$xmlObject = simplexml_load_string($response);
+				if( $xmlObject === false){
+					log_message('error', 'Invalid XML response received.');
+					echo json_encode([
+						'status' => 'error',
+						'message' => 'Error on Decryption - Cipher Key not valid',
+						'http_code' => 500
+					]);
+					exit;
+				}
+				else{
+					log_message('debug', 'is xml ? = '. $xmlObject);
+					function xmlToArray($xml) {
+						$json = json_encode($xml);
+						$array = json_decode($json, true);
+
+						return removeAttributes($array);
+					}
+					function removeAttributes($data) {
+						if (!is_array($data)) {
+							return $data;
+						}
+						// If @attributes exist, merge them with the current array
+						if (isset($data["@attributes"])) {
+							$data = array_merge($data["@attributes"], $data);
+							unset($data["@attributes"]);
+						}
+						// Recursively process child elements
+						foreach ($data as $key => &$value) {
+							$value = removeAttributes($value);
+						}
+						return $data;
+					}
+					$jsonArray = xmlToArray($xmlObject);
+					$json = json_encode($jsonArray, JSON_PRETTY_PRINT);
+					echo json_encode([
+						'status' => 'success',
+						'message' => 'Admission form submitted successfully!',
+						'api_response' => json_decode($json, true),
+						'http_code' => $httpCode
+					]);
+				}
+				
+			}
+			else if ($httpCode == 0){
+				echo json_encode([
+					'status' => 'error',
+					'message' => 'Error connecting to external API.',
+					'http_code' => $httpCode
+				]);
+			}
+			else {
+				echo json_encode([
+					'status' => 'error',
+					'message' => 'Failed to submit admission form to external API.',
+					'http_code' => $httpCode,
+					'api_response' => $response
+				]);
+			}
+
+		}
+		
 	}
 
 	public function submitXMLData()
@@ -290,9 +309,6 @@ class AdmissionController extends CI_Controller {
 		$api_key = $api_config['API_KEY'];
 		$api_url = $api_config['API_URL'];
 		$app_key = $api_config['APP_KEY'];
-		#$vAccreID = $this->input->cookie('accreid') ;
-		$vAccreID ='A91000007';
-		$hospital_code = $this->hospital_code;
 		$data = $this->input->post('data_dict');
 
 		foreach ($data as $dict_data) {
@@ -361,25 +377,24 @@ class AdmissionController extends CI_Controller {
 			$response = curl_exec($ch);
 			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			curl_close($ch);
+
+
+			$jsonResponse = json_decode($response, true);
 			log_message('debug', 'response'. $response);
 			if ($httpCode == 200) {
 				echo json_encode([
 					'status' => 'success',
 					'message' => 'Admission form submitted successfully!',
-					'api_response' => json_decode($response)
+					'api_response' => $jsonResponse
 				]);
 			} else {
 				echo json_encode([
 					'status' => 'error',
 					'message' => 'Failed to submit admission form to external API.',
 					'http_code' => $httpCode,
-					'api_response' => json_decode($response)
+					'api_response' => $jsonResponse
 				]);
 			}
-
-
-
-
 		}
 		
 	}

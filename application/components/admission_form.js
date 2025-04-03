@@ -120,6 +120,10 @@ var cacheDom = function() {
     $Xmladdress                 =document.querySelector("#xmlAddress");
 
 
+    let today = new Date().toISOString().split("T")[0]; // Get current date in YYYY-MM-DD format
+    $pBirthdate.setAttribute("max", today);
+
+
 
     
 }
@@ -356,11 +360,25 @@ var bindEvents = function() {
 
                 }
                 else {
-                    console.log(jsonResponse.api_response.message)
-                    reference_number = jsonResponse.api_response.message;
-                    responseMessageDiv.innerHTML = `Admission successfully saved. Reference Number: ${reference_number}`;
-                    responseMessageDiv.style.display = "block";
-                    window.location.reload();
+                    console.log(jsonResponse.api_response.errors)
+
+                    if (jsonResponse.api_response.errors.length > 0) {
+                        console.log("error");
+                        let errorList = "<ul style='color: red; text-align: left;'>";
+                        jsonResponse.api_response.errors.forEach(function(error) {
+                            errorList += `<li>${error}</li>`;
+                        });
+                        errorList += "</ul>";
+                        responseMessageDiv.innerHTML = errorList;
+                        responseMessageDiv.style.display = "block";
+                    }
+                    else{
+                        reference_number = jsonResponse.api_response.message;
+                        responseMessageDiv.innerHTML = `Admission successfully saved. Reference Number: ${reference_number}`;
+                        responseMessageDiv.style.display = "block";
+                        window.location.reload();
+                    }
+    
                 }
                 
             },
