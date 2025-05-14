@@ -4,8 +4,11 @@ var $btnConfirmSave;
 var $btnCloseConfirmModal
 
 
+
 var $btnUploadXml;
 var $xmlFile;
+var $btnSubmitXmlData;
+var $Xmladdress;
 
 var $caseNumber;
 var $pFirstName;
@@ -38,6 +41,11 @@ var $AdmissionTime;
 var $Availment;
 var $MedicalCode;
 var $AdmissionDiagnosis;
+var $AddressBlock;
+var $streetContainer;
+var $addressDataContainer;
+
+
 
 var $csrfToken;
 
@@ -63,7 +71,7 @@ var cacheDom = function() {
     $csrfToken   = document.querySelector('input[name="csrf_test_name"]').value;
     console.log($csrfToken);
     $btnSubmit          = document.querySelector("#btn-submit");
-    $confirmSaveModal   = $("#confirmSaveModal");
+    $confirmSaveModal   =$("#confirmSaveModal");
     $btnConfirmSave     = document.querySelector("#btn-modal-create-confirm");
     $btnCloseConfirmModal = document.querySelector("#btn-modal-close");
 
@@ -98,11 +106,24 @@ var cacheDom = function() {
     $mContactNumber     = document.querySelector("#memberContactNumber");
 
     $TypeBenefit        = document.querySelector("#typeBenefit");
-    $admissionDate      = document.querySelector("#admissionDate");
+    $AdmissionDate      = document.querySelector("#admissionDate");
     $AdmissionTime      = document.querySelector("#admissionTime");
     $Availment          = document.querySelector("#AvailmentCode");
     $MedicalCode        = document.querySelector("#admissionCodeType");
     $AdmissionDiagnosis = document.querySelector("#AdmissionDiagnosis");
+
+
+    $AddressBlock       = document.getElementById("address-data-container");
+    $streetContainer            = document.getElementById("street-container");
+    $addressDataContainer       = document.getElementById("address-details-container");
+    $btnSubmitXmlData           = document.getElementById("btn-submit-xml-data");
+    $Xmladdress                 =document.querySelector("#xmlAddress");
+
+
+    let today = new Date().toISOString().split("T")[0]; // Get current date in YYYY-MM-DD format
+    $pBirthdate.setAttribute("max", today);
+
+
 
     
 }
@@ -116,49 +137,17 @@ var bindEvents = function() {
     $mEmailAddress.disabled = true;
     $mContactNumber.disabled = true;
 
-    $btnUploadXml.addEventListener("click", function(event){
-        let data_file = $xmlFile.files[0];
-        console.log("click upload xml");
-        if (data_file) {
-            let reader = new FileReader();
+    function convertTo24HourFormat(time12h) {
+        let [time, modifier] = time12h.split(" ");
+        let [hours, minutes] = time.split(":");
     
-            reader.onload = function(event) {
-                _encrypted_data = event.target.result;
-                console.log("XML Content:", _encrypted_data);
-                // Process data after it's loaded
-                processData(_encrypted_data);
-                // Optionally, parse XML content
-                // let parser = new DOMParser();
-                // let xmlDoc = parser.parseFromString(_encrypted_data, "text/xml");
-                // console.log("Parsed XML:", xmlDoc);
-                // Example: Get data from a specific XML tag
-                // let someTag = xmlDoc.getElementsByTagName("yourTagName")[0]?.textContent;
-                // console.log("Extracted Data:", someTag);
-            };
-           
-            reader.readAsText(data_file); // Read file as text
-        } else {
-            console.log("No file selected.");
+        if (modifier === "AM" && hours === "12") {
+            hours = "00"; // Midnight case
+        } else if (modifier === "PM" && hours !== "12") {
+            hours = String(parseInt(hours, 10) + 12); // Convert PM hours
         }
-    });
-    function processData(data) {
-        console.log("Processing encrypted data:", data);
-        $.ajax({
-            url: "upload-xml",
-            method: "POST",
-            data: {
-                encrypted_data: data,
-                csrf_test_name: $csrfToken
-            },
-            success: function(response){
-                console.log(response);
-                jsonResponse = JSON.parse(response);
-                console.log(jsonResponse.api_response);
-            },
-            error: function(response){
-                console.error("Error response:", response)
-            }
-        });
+    
+        return `${hours}:${minutes}`;
     }
 
     $selectMembershipType.addEventListener("change",function(){
@@ -224,14 +213,15 @@ var bindEvents = function() {
         _select_benefit = $TypeBenefit.value;
     });
 
-    $admissionDate.addEventListener("change",function(){
-        _select_admission_date = $admissionDate.value;
+    $AdmissionDate.addEventListener("change",function(){
+        _select_admission_date = $AdmissionDate.value;
     });
 
     $Availment.addEventListener("change",function(){
         _select_reason_availment = $Availment.value;
     });
     
+
     function validateFields() {
         let isValid = true;
         const fields = document.querySelectorAll("[data-error]");
@@ -267,8 +257,9 @@ var bindEvents = function() {
                     return; // Skip validation for these fields if they are blank
                 }
             }
-           
+            
             if (!field.value.trim()) {
+                console.log(errorElement)
                 errorElement.textContent = "This field is required.";
                 errorElement.style.display = "block";
                 field.focus();
@@ -277,42 +268,7 @@ var bindEvents = function() {
                 errorElement.style.display = "none";
             }
         });
-        console.log(isValid);
-        return isValid;
-    }
-
-
-    function validateFieldsMember() {
         
-        let isValid = true;
-        const fields = document.querySelectorAll("[mdata-error]");
-        //console.log(fields)
-        fields.forEach(field => {
-            //console.log(field.dataset.error);
-            const errorElement = document.querySelector(field.dataset.error);
-            // const isMononymChecked =$pMononym.checked;
-            //console.log(field.id);
-            if (!errorElement) {
-                console.error(`Error element not found for field: ${field.id}`);
-                return; 
-            }
-
-            // if (isMononymChecked && (field.id === "lastName" || field.id === "middleName")) {
-            //     errorElement.style.display = "none"; // Clear any previous error
-            //     return;
-            // }
-           
-            if (!field.value.trim()) {
-                //console.log(errorElement)
-                errorElement.textContent = "This field is required.";
-                errorElement.style.display = "block";
-                field.focus();
-                isValid = false;
-            } else {
-                errorElement.style.display = "none";
-            }
-        });
-        //console.log(isValid);
         return isValid;
     }
 
@@ -320,14 +276,14 @@ var bindEvents = function() {
         event.preventDefault();
         if(_select_membership_type == "D"){
             if ( validateFields()) {
-                $confirmSaveModal.show(); 
-            }
+                $confirmSaveModal.modal("show");
+            };
         }
         else{
             if (validateFields()) {
-                $confirmSaveModal.show(); 
+                $confirmSaveModal.modal("show");
             }
-        }
+        };
     });
 
     $btnCloseConfirmModal.addEventListener("click", function(event){
@@ -376,7 +332,6 @@ var bindEvents = function() {
                 "admission_date": _select_admission_date,
                 "admission_time": $AdmissionTime.value
         }
-        console.log(dataForm);
         $.ajax({
             url: "submit-admission",
             method: "POST",
@@ -391,7 +346,8 @@ var bindEvents = function() {
                 // Check if response contains JSON
                 jsonResponse = JSON.parse(response);
                 if( jsonResponse.http_code == 403 && jsonResponse.api_response['detail'].length > 0){
-                    console.log(jsonResponse.api_response['detail']);
+
+                    console.log(jsonResponse.api_response);
                     let errorList = "<ul style='color: red; text-align: left;'>";
                     jsonResponse.api_response['detail'].forEach(function(error) {
                         errorList += `<li>${error}</li>`;
@@ -404,17 +360,30 @@ var bindEvents = function() {
 
                 }
                 else {
-                    console.log(jsonResponse.api_response.message)
-                    reference_number = jsonResponse.api_response.message;
-                    responseMessageDiv.innerHTML = `Admission successfully saved. Reference Number: ${reference_number}`;
-                    responseMessageDiv.style.display = "block";
-                    window.location.reload();
+                    console.log(jsonResponse.api_response.errors)
+
+                    if (jsonResponse.api_response.errors.length > 0) {
+                        console.log("error");
+                        let errorList = "<ul style='color: red; text-align: left;'>";
+                        jsonResponse.api_response.errors.forEach(function(error) {
+                            errorList += `<li>${error}</li>`;
+                        });
+                        errorList += "</ul>";
+                        responseMessageDiv.innerHTML = errorList;
+                        responseMessageDiv.style.display = "block";
+                    }
+                    else{
+                        reference_number = jsonResponse.api_response.message;
+                        responseMessageDiv.innerHTML = `Admission successfully saved. Reference Number: ${reference_number}`;
+                        responseMessageDiv.style.display = "block";
+                        window.location.reload();
+                    }
+    
                 }
                 
             },
             error: function(response){
                 document.getElementById("loadingIndicator").style.display = "none";
-                alert(response)
                 console.error("Error response:", response)
             }
         });

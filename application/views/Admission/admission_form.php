@@ -4,8 +4,10 @@
 	<link href="<?php echo base_url('assets/css/bootstrap.css') ?> " rel="stylesheet">
     <link href="<?php echo base_url('assets/css/all.min.css') ?> " rel="stylesheet">
     <link href="<?php echo base_url('assets/css/bootstrap-icons.css') ?> " rel="stylesheet">
-	<script src="<?= base_url('assets/js/bootstrap.bundle.min.js') ?>"></script>
+    <link href="<?php echo base_url('assets/css/custom.css') ?>" rel="stylesheet">
     <script src="<?= base_url('assets/js/jquery.min.js') ?>"></script>
+	<script src="<?= base_url('assets/js/bootstrap.bundle.min.js') ?>"></script>
+    
     
 	<title> <?= $title;?> </title>
 </head>
@@ -18,34 +20,26 @@
             <nav class="navbar navbar-expand-lg navbar-light sticky-top" style="background-color: #6BAA75">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item navbar-expand-lg-extend">
-                        <a class="nav-link" id="btn-new-transaction" href="#">
-                            <div class="bi bi-arrow-bar-left"> Back </div> 
+                        <a class="nav-link " id="btn-new-transaction" href="/eadmission_logbook" style="border-radius: 5px; transition: background-color 0.3s ease-in-out;" onmouseover="this.style.backgroundColor='#5C9A65'; this.style.color='white';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='black';">
+                            <div class="bi bi-arrow-bar-left"> Dashboard </div> 
+                        </a>
+                    </li>
+
+                    
+                    <li class="nav-item navbar-expand-lg-extend">
+                        <a class="nav-link " style="border-radius: 5px; transition: background-color 0.3s ease-in-out;" onmouseover="this.style.backgroundColor='#5C9A65'; this.style.color='white';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='black';" id="btn-new-transaction" href="/eadmission_logbook/admission_form">
+                            <div class="bi bi-database-add"> Admission Form </div> 
+                        </a>
+                    </li>
+
+                    <li class="nav-item navbar-expand-lg-extend">
+                        <a class="nav-link " id="btn-new-transaction" href="/eadmission_logbook/upload-xml-index" style="border-radius: 5px; transition: background-color 0.3s ease-in-out;" onmouseover="this.style.backgroundColor='#5C9A65'; this.style.color='white';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='black';">
+                            <div class="bi bi-filetype-xml"> Extract Data </div> 
                         </a>
                     </li>
                 </ul>
             </nav>
-            <div class="card-header">
-                <h4 class="text-center">Upload eClaims XML</h4>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-10">
-                        <div class="form-group">
-                            <label for="xmlFile">Upload XML File</label>
-                            <div class="input-group">
-                                <input type="file" class="form-control" id="xmlFile" accept=".xml">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button class="btn btn-primary" id="btn-upload-xml">Upload</button>
-                    </div>
-                </div>
-            </div>
-
-
-
-
+           
             <div class="card-header">
                 <h4 class="text-center">Admission Form</h4>
             </div>
@@ -163,8 +157,18 @@
                         </div>
                     </div>
                 </div>
+<!-- 
+                <div class="row" style="display: none;" id="address-data-container">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label>Address<span style="color: red;font-weight: bold;margin-left: 5px;">*</span></label>
+                            <input class="form-control" type="text" id="xmlAddress" data-error="#address-error" >
+                            <span id="address-error" class="text-red-500 text-sm" style="display: none;color: red;"></span>
+                        </div>
+                    </div>
+                </div> -->
 
-                <div class="row">
+                <div class="row" id="street-container">
                     <div class="col-md-12">
                         <div class="form-group">
                             <label>Street<span style="color: red;font-weight: bold;margin-left: 5px;">*</span></label>
@@ -174,7 +178,7 @@
                     </div>
                 </div>
 
-                <div class="row">
+                <div class="row" id="address-details-container">
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>Barangay<span style="color: red;font-weight: bold;margin-left: 5px;">*</span></label>
@@ -335,16 +339,17 @@
                     </div>
                 </div>
 
-                <div class="row" style="padding: 20px;">
+                <div class="row" style="padding: 20px; display: block;" id="btn-submit-encoded-data">
                     <div class="col">
                         <div class="form-group">
                             <button  class="btn btn-primary" id="btn-submit">Submit</button>
                         </div>
                     </div>
                 </div>
+             
         </div>
     </div>
-    <div class="modal" tabindex="-1" role="dialog" id="confirmSaveModal">
+    <div class="modal"  id="confirmSaveModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -372,5 +377,110 @@
             <span class="text-muted">eAdmission Logbook v1.0.2025.1</span>
         </div>
     </footer>
+
+ 
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+    var navLinks = document.querySelectorAll(".nav-link");
+    var currentPath = window.location.pathname.replace(/\/$/, ""); // Normalize URL (remove trailing slash)
+
+    navLinks.forEach(function (link) {
+        var linkPath = link.getAttribute("href").replace(/\/$/, ""); // Normalize href
+
+        if (linkPath === currentPath) {
+            link.classList.add("active"); // Add active class
+            link.style.backgroundColor = "#5C9A65"; // Highlight active link
+            link.style.color = "white";
+        }
+
+        // Add hover effect
+        link.addEventListener("mouseover", function () {
+            this.style.backgroundColor = "#5C9A65";
+            this.style.color = "white";
+        });
+
+        link.addEventListener("mouseout", function () {
+            if (!this.classList.contains("active")) { // Keep active link highlighted
+                this.style.backgroundColor = "transparent";
+                this.style.color = "black";
+            }
+        }); 
+    });
+
+
+    let today = new Date();
+    let todayStr = today.toISOString().split("T")[0];
+    let pBirthdate = document.getElementById("birthDate");
+    if (pBirthdate) {
+        pBirthdate.setAttribute("max", todayStr);
+    }
+    pBirthdate.addEventListener("change", function () {
+            if (this.value > todayStr) {
+                this.value = todayStr; 
+            }
+    });
+
+    //disable future date
+    let admissionDate = document.getElementById("admissionDate");
+    if (admissionDate) {
+        admissionDate.setAttribute("max", todayStr);
+    }
+    admissionDate.addEventListener("change", function () {
+            if (this.value > todayStr) {
+                this.value = todayStr; 
+            }
+    });
+
+    document.getElementById("firstName").addEventListener("input", function () {
+        let regex = /^[A-Za-z\s]+$/; 
+        let firstName = this.value;
+
+        if (!regex.test(firstName)) {
+            this.value = firstName.replace(/[^A-Za-z\s]/g, ""); 
+        }
+    });
+    document.getElementById("middleName").addEventListener("input", function () {
+        let regex = /^[A-Za-z\s]+$/; 
+        let middleName = this.value;
+
+        if (!regex.test(middleName)) {
+            this.value = middleName.replace(/[^A-Za-z\s]/g, "");
+        }
+    });
+    document.getElementById("lastName").addEventListener("input", function () {
+        let regex = /^[A-Za-z\s]+$/; 
+        let lastName = this.value;
+
+        if (!regex.test(lastName)) {
+            this.value = lastName.replace(/[^A-Za-z\s]/g, ""); 
+        }
+    });
+    document.getElementById("memberFirstname").addEventListener("input", function () {
+        let regex = /^[A-Za-z\s]+$/; 
+        let memberFirstname = this.value;
+
+        if (!regex.test(memberFirstname)) {
+            this.value = memberFirstname.replace(/[^A-Za-z\s]/g, ""); 
+        }
+    });
+    document.getElementById("memberMiddlename").addEventListener("input", function () {
+        let regex = /^[A-Za-z\s]+$/; 
+        let memberMiddlename = this.value;
+
+        if (!regex.test(memberMiddlename)) {
+            this.value = memberMiddlename.replace(/[^A-Za-z\s]/g, ""); 
+        }
+    });
+    document.getElementById("memberLastname").addEventListener("input", function () {
+        let regex = /^[A-Za-z\s]+$/;
+        let memberLastname = this.value;
+
+        if (!regex.test(memberLastname)) {
+            this.value = memberLastname.replace(/[^A-Za-z\s]/g, "");
+        }
+    });
+
+});
+</script>
 </body>
 </html>
