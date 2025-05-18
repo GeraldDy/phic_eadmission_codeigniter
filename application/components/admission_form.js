@@ -287,7 +287,7 @@ var bindEvents = function() {
     });
 
     $btnCloseConfirmModal.addEventListener("click", function(event){
-        $confirmSaveModal.hide(); 
+        $confirmSaveModal.modal("hide");
     });
 
     $btnConfirmSave.addEventListener("click",function(event){
@@ -345,23 +345,11 @@ var bindEvents = function() {
                 var responseMessageDiv = document.getElementById("responseMessage");
                 // Check if response contains JSON
                 jsonResponse = JSON.parse(response);
-                if( jsonResponse.http_code == 403 && jsonResponse.api_response['detail'].length > 0){
+                
+                console.log(jsonResponse.api_response.status);
 
-                    console.log(jsonResponse.api_response);
-                    let errorList = "<ul style='color: red; text-align: left;'>";
-                    jsonResponse.api_response['detail'].forEach(function(error) {
-                        errorList += `<li>${error}</li>`;
-                    });
-                    errorList += "</ul>";
-    
-                    responseMessageDiv.innerHTML = errorList;
-                    responseMessageDiv.style.display = "block";
+                if (jsonResponse.api_response.status != "success") {
                     
-
-                }
-                else {
-                    console.log(jsonResponse.api_response.errors)
-
                     if (jsonResponse.api_response.errors.length > 0) {
                         console.log("error");
                         let errorList = "<ul style='color: red; text-align: left;'>";
@@ -372,14 +360,15 @@ var bindEvents = function() {
                         responseMessageDiv.innerHTML = errorList;
                         responseMessageDiv.style.display = "block";
                     }
-                    else{
-                        reference_number = jsonResponse.api_response.message;
-                        responseMessageDiv.innerHTML = `Admission successfully saved. Reference Number: ${reference_number}`;
-                        responseMessageDiv.style.display = "block";
-                        window.location.reload();
-                    }
-    
                 }
+                else{
+                    reference_number = jsonResponse.api_response.reference_number;
+                    alert("Admission successfully saved \nReference Numbers:\n" + reference_number);
+                    
+                    window.location.reload();
+                }
+
+                
                 
             },
             error: function(response){
