@@ -20,21 +20,32 @@ class AdmissionController extends CI_Controller {
 		$api_key = $api_config['API_KEY'];
 		$app_key = $api_config['APP_KEY'];
 		$api_url = $api_config['API_GET_HOSPITAL_CODE_URL'];
-		$api_url_with_key = $api_url . $vAccreID . '?api_key=' . $api_key . '&app_key='. $app_key ;
+		$api_url_with_key = $api_url . '?accre_no=' . $vAccreID ;
 		$ch = curl_init($api_url_with_key);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_HTTPGET, true);
+		curl_setopt($ch, CURLOPT_POST, true);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
 		$response = curl_exec($ch);
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
 		
-		if ($httpCode == 200) {
-			return $response;
+		$data = json_decode($response, true); // decode to associative array
+
+		if (isset($data['status']) && $data['status'] === 'success') {
+			$hospital_code = $data['hospital_code'];
+			return $hospital_code;
 		} else {
-			log_message('debug', 'hospital_code_error: '. $response);
-			return null;
+			log_message('debug', 'Error: No hospital code found.');
 		}
+
+
+		// if ($httpCode == 200) {
+		// 	return $response;
+		// 	log_message('debug', 'response: ' . $response['hospital_code']);
+		// } else {
+		// 	log_message('debug', 'hospital_code_error: '. $response);
+		// 	return null;
+		// }
 	}
 
 	public function get_cipher_key($hospital_code){
@@ -45,7 +56,7 @@ class AdmissionController extends CI_Controller {
 			$api_key = $api_config['API_KEY'];
 			$app_key = $api_config['APP_KEY'];
 			$api_url = $api_config['API_GET_CIPHER_KEY_URL'];
-			$api_url_with_key = $api_url . '?api_key=' . $api_key . '&app_key='. $app_key . '&hospital_code=' . $hospital_code ;
+			$api_url_with_key = $api_url . '?pmcc_code=' . $hospital_code ;
 			log_message('debug', 'API URL: ' . $api_url_with_key);
 			$ch = curl_init($api_url_with_key);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -55,12 +66,15 @@ class AdmissionController extends CI_Controller {
 			$response = curl_exec($ch);
 			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 			curl_close($ch);
-			log_message('debug', 'response'. $response);
+			
 
-			if ($httpCode == 200) {
-				return $response;
+			$data = json_decode($response, true); // decode to associative array
+			log_message('debug', 'response: '. $data['cipher_key']);
+			if (isset($data['status']) && $data['status'] === 'success') {
+				$cipher_key = $data['cipher_key'];
+				return $cipher_key;
 			} else {
-				return null;
+				log_message('debug', 'Error: No cipher key.');
 			}
 		}
 		
@@ -73,30 +87,31 @@ class AdmissionController extends CI_Controller {
 			$this->load->view('error_template/internal_server');
 		}
 		else{
-			$this->load->helper('config');
-			$api_config = get_config_ini('API_CREDENTIALS');
-			$api_key = $api_config['API_KEY'];
-			$app_key = $api_config['APP_KEY'];
-			$api_url = $api_config['API_GET_LOGBOOK_DATA_URL'];			
-			$api_url_with_key = $api_url .$this->hospital_code.'?api_key=' . $api_key . '&app_key='. $app_key;
+			$this->load->view('Admission/dashboard');
+			// $this->load->helper('config');
+			// $api_config = get_config_ini('API_CREDENTIALS');
+			// $api_key = $api_config['API_KEY'];
+			// $app_key = $api_config['APP_KEY'];
+			// $api_url = $api_config['API_GET_LOGBOOK_DATA_URL'];			
+			// $api_url_with_key = $api_url .$this->hospital_code.'?api_key=' . $api_key . '&app_key='. $app_key;
 
-			$ch = curl_init($api_url_with_key);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($ch, CURLOPT_HTTPGET, true);
-			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+			// $ch = curl_init($api_url_with_key);
+			// curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			// curl_setopt($ch, CURLOPT_HTTPGET, true);
+			// curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
 
-			$response = curl_exec($ch);
-			$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-			curl_close($ch);
-			log_message('debug', 'response'. $response);
+			// $response = curl_exec($ch);
+			// $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+			// curl_close($ch);
+			// log_message('debug', 'response'. $response);
 
-			if ($httpCode == 200) {
-				$data['title'] = "Dashboard";
-				$data['admission_data'] = json_decode($response,true);
-				$this->load->view('Admission/dashboard', $data);
-			} else {
-				$this->load->view('error_template/internal_server');
-			}	
+			// if ($httpCode == 200) {
+			// 	$data['title'] = "Dashboard";
+			// 	$data['admission_data'] = json_decode($response,true);
+			// 	$this->load->view('Admission/dashboard',$data);
+			// } else {
+			// 	$this->load->view('error_template/internal_server');
+			// }	
 		}
 	}
 	
@@ -136,8 +151,8 @@ class AdmissionController extends CI_Controller {
 		
 		$AdmDate = new DateTime($decodeData['admission_date']);
 		$pBirthdate = new DateTime($decodeData['p_birthday']);
-		$formattedPBirthdate = $pBirthdate->format('m-d-Y');
-		$formattedAdmDate = $AdmDate->format('m-d-Y');
+		$formattedPBirthdate = $pBirthdate->format('Y-m-d');
+		$formattedAdmDate = $AdmDate->format('Y-m-d');
 		$pAge = $pBirthdate->diff(new DateTime)->y;
 
 		$data_array = array(
@@ -173,7 +188,7 @@ class AdmissionController extends CI_Controller {
 		);
 
 		log_message('debug', 'Admission form submitted: ' . json_encode($data_array));
-		$api_url_with_key = $api_url . '?api_key=' . $api_key. '&app_key='. $app_key ;
+		$api_url_with_key = $api_url ;
 		log_message('debug', 'API URL: ' . $api_url_with_key);
         $ch = curl_init($api_url_with_key);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -223,7 +238,7 @@ class AdmissionController extends CI_Controller {
 			$api_url = $api_config['API_DECRYPT_URL'];
 
 			log_message('debug', 'this is cipher key: ' . $this->cipher_key);
-			$api_url_with_key = $api_url . '?Cipherkey=' . $this->cipher_key;
+			$api_url_with_key = $api_url . '?cipher_key=' . $this->cipher_key;
 			log_message('debug', 'API URL: ' . $api_url_with_key);
 			$ch = curl_init($api_url_with_key);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -313,16 +328,17 @@ class AdmissionController extends CI_Controller {
 
 		foreach ($data as $dict_data) {
 			// Access individual properties directly
-			log_message("debug" , "test " . $dict_data);
+		
 			//$dict_data = json_decode($dict_data_d, true);
 
-			log_message("debug", "last_name: ". json_encode($dict_data["pLastname"]));
+			log_message("debug", "data: ". json_encode($dict_data));
 			$AdmDateStr = $dict_data['admission_date']; 
-
 			$pBirthdateStr = $dict_data['patient_birthdate'];
-			$pBirthdate = DateTime::createFromFormat('m-d-Y', $pBirthdateStr);
+			$pBirthdate = DateTime::createFromFormat('d-m-Y', $pBirthdateStr);
+			$pBdayFormatted = $pBirthdate->format('Y-m-d');
+			$AdmDate = new DateTime($AdmDateStr);
+			$formattedAdmDate = $AdmDate->format('Y-m-d');
 			$pAge = $pBirthdate->diff(new DateTime)->y;
-			log_message('debug', 'data ' . $pBirthdateStr);
 
 			$mononym = "N";
 	
@@ -333,13 +349,13 @@ class AdmissionController extends CI_Controller {
 			
 			$data_array = array(
 				"hospital_code"=> $this->hospital_code,
-				"case_number"=>  "",
+				"case_number"=> $dict_data['case_number'] ,
 				"p_mononym"=> $mononym,
 				"p_first_name"=> $dict_data['pFirstname'],
 				"p_middle_name"=> $dict_data['pMiddlename'],
 				"p_last_name"=> $dict_data['pLastname'],
 				"p_suffix"=>  $dict_data['patient_suffix'],
-				"p_birthday"=> $pBirthdateStr,  
+				"p_birthday"=> $pBdayFormatted,  
 				"p_gender"=> $dict_data['patient_sex'],    
 				"p_age"=> $pAge,
 				"p_nationality"=> "",
@@ -358,7 +374,7 @@ class AdmissionController extends CI_Controller {
 				"reason_for_availment"=> $dict_data['availment_type'],
 				"chief_complaint"=> $dict_data['admission_diagnosis'],
 				"admission_code"=> $dict_data['medical_code'], 
-				"admission_date"=> $AdmDateStr,
+				"admission_date"=> $formattedAdmDate,
 				"admission_time"=> $dict_data['admission_time'],
 				"is_extracted"=> "T"
 			);
@@ -397,6 +413,48 @@ class AdmissionController extends CI_Controller {
 			}
 		}
 		
+	}
+
+	public function GenerateAdmissionList()
+	{
+		$this->load->helper('config');
+		$data = $this->input->post('jsonData');
+		$start_date = $data["start_date"];
+		$end_date = $data["end_date"];
+		$f_start_date = new DateTime($start_date);
+		$f_end_date = new DateTime($end_date);
+		$formatted_start_date = $f_start_date->format('d-m-Y');
+		$formatted_end_date = $f_end_date->format('d-m-Y');
+
+		$api_config = get_config_ini('API_CREDENTIALS');
+		$api_url = $api_config['API_GET_ADMISSION_DATA_URL'];
+		$api_url_with_key = $api_url . '?pmcc_no='. $this->hospital_code . '&start_date=' . $formatted_start_date . '&end_date=' . $formatted_end_date;
+		
+		$ch = curl_init($api_url_with_key);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+		$response = curl_exec($ch);
+		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+		
+		$decodedResponse = json_decode($response, true); // decode as assoc array
+		log_message('debug', 'response: '. $response);
+		if ($httpCode == 200) {
+				echo json_encode([
+					'status' => 'success',
+					'message' => 'Admission form submitted successfully!',
+					'api_response' => $decodedResponse
+				]);
+			} else {
+				echo json_encode([
+					'status' => 'error',
+					'message' => 'Failed to submit admission form to external API.',
+					'http_code' => $httpCode,
+					'api_response' => $decodedResponse
+				]);
+			}
+
 	}
 }
 

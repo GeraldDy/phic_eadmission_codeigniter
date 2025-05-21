@@ -12,6 +12,7 @@ $route['translate_uri_dashes'] = FALSE;
 // Custom route for AJAX submission
 $route['submit-admission'] = 'AdmissionController/submitAdmission';
 $route['upload-xml'] = 'AdmissionController/uploadXML';
+$route['generate-admission-list'] = 'AdmissionController/GenerateAdmissionList';
 
 
 

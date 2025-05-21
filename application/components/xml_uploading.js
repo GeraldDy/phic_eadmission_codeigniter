@@ -167,6 +167,7 @@ var bindEvents = function() {
                             });
 
                             xml_data.push({
+                                "case_number": claimItem.pClaimNumber,
                                 "member_pin": claimItem.CF1.pMemberPIN,
                                 "patient_type": claimItem.CF1.pPatientIs,
                                 "pFirstname": claimItem.CF1.pPatientFirstName,
@@ -251,6 +252,7 @@ var bindEvents = function() {
 
 
                             xml_data.push({
+                                "case_number": claimItem.pClaimNumber,
                                 "member_pin": claimArray.CF1.pMemberPIN,
                                 "patient_type": claimArray.CF1.pPatientIs,
                                 "pFirstname": claimArray.CF1.pPatientFirstName,
@@ -305,6 +307,7 @@ var bindEvents = function() {
     });
     $btnSubmitXmlData.addEventListener("click", function(event){
         $btnSubmitXmlData.disabled = true;
+       
         $.ajax({
             url:"submit-xml-data",
             method: "POST",
@@ -314,6 +317,7 @@ var bindEvents = function() {
             },
             success: function(response){
                 console.log("Raw Response:", response);
+                const rawResponse = response;
                 var responseMessageDiv = document.getElementById("responseMessage");
                 // Check if response contains JSON
                 jsonResponse = response;
@@ -330,7 +334,10 @@ var bindEvents = function() {
                     responseMessageDiv.style.display = "block";
                 }
                 else {
-                    alert(`Admission successfully saved`);
+                    const fixedJsonString = `[${rawResponse.replace(/}{/g, '},{')}]`;
+                    const parsedArray = JSON.parse(fixedJsonString);
+                    const referenceNumbers = parsedArray.map(item => item.api_response.reference_number);
+                    alert("Admission successfully saved \nReference Numbers:\n" + referenceNumbers.join('\n'));
                     window.location.reload();
                 }
             },

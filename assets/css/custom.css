@@ -16,3 +16,44 @@
     background-color: #5C9A65 !important;
     color: white !important;
 }
+
+/* Enhances table visuals */
+#data-table th,
+#data-table td {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+#data-table {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+/* Optional subtle shadow */
+.table-responsive {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.card.shadow-deep {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    border-radius: 0.75rem;
+}
+
+.btn-success:hover {
+    background-color: #157347;
+    border-color: #146c43;
+}
+
+.btn-success i {
+    transition: transform 0.2s ease;
+}
+.btn-success:hover i {
+    transform: scale(1.2);
+}
+
+.table thead th {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
